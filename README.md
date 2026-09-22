@@ -117,6 +117,22 @@ uv run pytest -q
 
 Ela cobre dados iniciais, contrato HTTP, isolamento das tools, confirmação nativa do ADK com sessão SQLite, retomada, persistência após recriação do serviço, idempotência e a disputa simultânea de reservas. Um smoke conversacional real requer `GOOGLE_API_KEY` e deve seguir os 15 passos do enunciado, pois depende da disponibilidade e da cota ativa do Gemini.
 
+Além dos testes unitários, a suíte determinística transfere uma solicitação do agente principal ao especialista de reservas, interrompe a execução na confirmação, recria completamente o `AuroraRuntime` e aprova usando a sessão SQLite persistida. Ela também dispara aprovações concorrentes pelas rotas HTTP e inspeciona os eventos gravados para comprovar o isolamento entre apartamentos.
+
+O smoke opcional em `tests/test_live_evaluator_smoke.py` percorre o fluxo do avaliador com o Gemini real, incluindo negação, replay, reinício e disputa final. Para evitar consumo acidental de cota, ele só roda quando a chave está explicitamente exportada no ambiente do processo; uma chave presente apenas no `.env` não o habilita:
+
+```bash
+GOOGLE_API_KEY="sua-chave" uv run pytest -q tests/test_live_evaluator_smoke.py
+```
+
+No PowerShell:
+
+```powershell
+$env:GOOGLE_API_KEY = "sua-chave"
+uv run pytest -q tests/test_live_evaluator_smoke.py
+Remove-Item Env:GOOGLE_API_KEY
+```
+
 ### Contrato HTTP
 
 - `POST /sessoes`

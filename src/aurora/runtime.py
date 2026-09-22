@@ -6,6 +6,7 @@ from collections import defaultdict
 from typing import Any
 from uuid import uuid4
 
+from google.adk.apps import App
 from google.adk.runners import Runner
 from google.adk.sessions import DatabaseSessionService
 from google.genai import types
@@ -28,14 +29,20 @@ class ConfirmationNotFound(Exception):
 
 
 class AuroraRuntime:
-    def __init__(self, settings: Settings, repository: DomainRepository):
+    def __init__(
+        self,
+        settings: Settings,
+        repository: DomainRepository,
+        *,
+        app: App | None = None,
+    ):
         self.settings = settings
         self.repository = repository
         if settings.google_api_key:
             os.environ["GOOGLE_API_KEY"] = settings.google_api_key
         settings.aurora_session_db.parent.mkdir(parents=True, exist_ok=True)
         self.session_service = DatabaseSessionService(db_url=settings.session_db_url)
-        self.app = build_app(settings, repository)
+        self.app = app or build_app(settings, repository)
         self.runner = Runner(app=self.app, session_service=self.session_service)
         self._locks: defaultdict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
 
