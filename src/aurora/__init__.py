@@ -1,0 +1,2 @@
+"""Assistente do Residencial Aurora."""
+
